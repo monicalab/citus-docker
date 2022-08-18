@@ -6,7 +6,8 @@ services:
 
   master:
     container_name: "${COMPOSE_PROJECT_NAME:-citus}_master"
-    image: "citusdata/citus:11.0.5"
+    # image: "citusdata/citus:11.0.5"
+    image: "assadlab/citus-monica:11.0.5"
     ports: ["${COORDINATOR_EXTERNAL_PORT:-15432}:5432"]
     labels: ["com.citusdata.role=Master"]
     volumes:
@@ -30,7 +31,8 @@ services:
 
   manager:
     container_name: "${COMPOSE_PROJECT_NAME:-citus}_manager"
-    image: "citusdata/membership-manager:0.3.0"
+    # image: "citusdata/membership-manager:0.3.0"
+    image: "assadlab/citus-monica:11.0.5"
     volumes:
       - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
       - "./conf/postgresql.conf.sample:/usr/share/postgresql/postgresql.conf.sample"

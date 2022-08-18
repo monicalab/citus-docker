@@ -1,4 +1,4 @@
--- global udf
+-- Citus single shard table udf
 
 -- init global tid_mark table
 create or replace procedure citus.init_tid_mark()

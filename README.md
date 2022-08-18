@@ -88,6 +88,12 @@ If you inspect the configuration file, you’ll find that there is a container t
 
 You can stop your cluster with `docker-compose -p citus down`.
 
+## Build Image
+```bash
+git submodule update --init --recursive pg_jieba
+docker build -t citus-monica .
+```
+
 ## License
 
 The following license information (and associated [LICENSE][license] file) apply _only to the files within **this** repository_. Please consult Citus’s own repository for information regarding its licensing.

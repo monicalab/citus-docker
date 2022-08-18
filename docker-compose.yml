@@ -10,7 +10,7 @@ services:
     ports: ["${COORDINATOR_EXTERNAL_PORT:-15432}:5432"]
     labels: ["com.citusdata.role=Master"]
     volumes:
-      - "./conf/postgresql.conf.sample:/usr/share/postgresql/postgresql.conf.sample"
+      - "./conf/postgresql.conf.sample:/usr/share/postgresql/postgresql.conf.sample" 
     environment: &AUTH
       POSTGRES_USER: "${POSTGRES_USER:-postgres}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"

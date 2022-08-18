@@ -30,6 +30,7 @@ RUN echo "shared_preload_libraries='citus'" >> /usr/share/postgresql/postgresql.
 
 # add scripts to run after initdb
 COPY 001-create-citus-extension.sql /docker-entrypoint-initdb.d/
+COPY 002-citus-single-shard-table-udf.sql /docker-entrypoint-initdb.d/
 
 # add health check script
 COPY pg_healthcheck wait-for-manager.sh /

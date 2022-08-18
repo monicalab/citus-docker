@@ -98,7 +98,7 @@ In the multi-tenant scenario, citus solves the tenant partitioning problem for s
 
 One solution is to wrap the native Postgres table into a single-shard citus distributed table and schedule it to the correct node using citus's sharddistribution policy. This achieves the goal of co-locating a small single-node storage table with the citus distributed table corresponding to the tenant's shard.
 
-![image-20220818190748903](../../Library/Application Support/typora-user-images/image-20220818190748903.png)
+![image-20220818190748903](https://cdn.jsdelivr.net/gh/Al-assad/md-img@master/bucket-4/202208181926.png)
 
 ### Usage
 

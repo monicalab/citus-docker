@@ -1,10 +1,14 @@
 # Citus
 
-[![Image Size](https://images.microbadger.com/badges/image/citusdata/citus.svg)][image size]
+[![Image Size](https://raw.githubusercontent.com/citusdata/citus/main/citus-readme-banner.png)][image size]
 [![Release](https://img.shields.io/github/release/citusdata/docker.svg)][release]
 [![License](https://img.shields.io/github/license/citusdata/docker.svg)][license]
 
 Citus is a PostgreSQL-based distributed RDBMS. For more information, see the [Citus Data website][citus data].
+
+This branch adds additional support for [distributed single shard tables](#Distributed Single Shard Table Supports) to the citus project, as well as prepending the following pg plugins:
+
+* [pg_jieba](https://github.com/jaiminpan/pg_jieba)
 
 ## Function
 
@@ -88,7 +92,62 @@ If you inspect the configuration file, you’ll find that there is a container t
 
 You can stop your cluster with `docker-compose -p citus down`.
 
+## Distributed Single Shard Table Supports
+
+In the multi-tenant scenario, citus solves the tenant partitioning problem for same-structured tables very well and maintains a good co-location policy. However, for tables with completely different structures held by different tenants, in the case that the data volume of these tables is small, such as the average total number of rows not exceeding 5000, directly using citus' distributed tables does not work well, and the query performance loss caused by multiple partitions (especially when the partitions are distributed on different nodes) is far worse than storing the table on a regular postgres node. But using native postgres directly does not take advantage of the sharding rebalancing capabilities provided by citus.
+
+One solution is to wrap the native Postgres table into a single-shard citus distributed table and schedule it to the correct node using citus's sharddistribution policy. This achieves the goal of co-locating a small single-node storage table with the citus distributed table corresponding to the tenant's shard.
+
+![image-20220818190748903](../../Library/Application Support/typora-user-images/image-20220818190748903.png)
+
+### Usage
+
+Initialize global distribution identifier after the citus cluster initialization is complete:
+
+```sql
+call citus.init_tid_mark()
+```
+
+Create a distributed single shard table, there are two shard placement strategies:
+
+* Co-located with tenant-id:  `citus.colocate_single_shard_table`
+* Random distribution: `citus.randomly_single_shard_table`
+
+```sql
+-- create a local table on coordinator node
+create table test(
+  f1 text,
+  f2 int,
+  f3 int
+);
+
+-- wrapper the local table 'test' as distributed single shard table
+select citus.create_single_shard_distributed_table('test')
+
+-- strategy A: co-located with tenent-id
+select citus.colocate_single_shard_table('test', 'f1741e9e-fbbb-41f3-9160-77109a073f75')
+
+-- strategy B: random distributed
+select citus.randomly_single_shard_table('test')
+```
+
+By default, the first primary key column of the wrapped table or this first normal column (in case it does not contain any primary key) is used as the shard column of the citus distributed table.
+
+When the citus cluster is scaling out, consider rebalancing distributed single shard table to the correct tenent_id co-located node:
+
+```sql
+select citus.colocate_single_shard_table('test')
+```
+
+Of course, the distributed single shard table itself is a citus distributed table and can be converted to a citus native distributed table at any time.
+
+```sql
+-- convert to citus native distributed table
+select alter_distributed_table('test', distribution_column:='f2', shard_count:=32)
+```
+
 ## Build Image
+
 ```bash
 git submodule update --init --recursive pg_jieba
 docker build -t citus-monica .
